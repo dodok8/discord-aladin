@@ -4,6 +4,7 @@
   "main": "dist/index.js",
   "type": "module",
   "devDependencies": {
+    "@flydotio/dockerfile": "latest",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
     "bun-types": "latest",
@@ -18,7 +19,6 @@
   },
   "scripts": {
     "build": "bun build.ts",
-    "prestart": "bun build.ts",
     "start": "bun dist/index.js"
   }
 }
