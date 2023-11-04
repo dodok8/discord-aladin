@@ -14,5 +14,8 @@
   },
   "dependencies": {
     "discord.js": "^14.13.0"
+  },
+  "scripts": {
+    "build": "bun build.ts"
   }
 }
