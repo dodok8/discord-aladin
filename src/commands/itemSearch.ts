@@ -113,11 +113,9 @@ export const itemSearch: SlashCommand = {
       )
       .setColor('#eb3b94')
       .setTimestamp()
-    console.log('hi')
     await interaction.followUp({
       embeds: [embed],
     })
-    console.log('bye')
   },
 }
 
