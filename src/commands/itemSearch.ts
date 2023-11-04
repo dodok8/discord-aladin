@@ -78,19 +78,47 @@ export const itemSearch: SlashCommand = {
     const query = interaction.options.get('검색어')?.value
     const queryType = interaction.options.get('검색어-종류')?.value || 'Keyword'
     const searchTarget = interaction.options.get('검색-대상')?.value || 'All'
-    const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${process.env.ALADIN_TOKEN}&Query=${query}&QueryType=${queryType}&MaxResults=10&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
+    const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
+      process.env.ALADIN_TOKEN
+    }&Query=${encodeURI(
+      String(query)
+    )}&QueryType=${queryType}&MaxResults=10&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
     const response = await fetch(URL)
-    const { item } = await response.json()
-    const list = item
-      .map((i: any) => `${i.title} - ${i.author}`)
-      .reduce((acc: string, curr: string) => acc + '\n' + curr)
+    const { item, totalResults } = await response.json()
+    const bookInfos = item.map((i: any): [string, string] => [
+      `${i.title} | ${i.author}`,
+      i.link,
+    ])
+    const embed = new EmbedBuilder()
+      .setAuthor({
+        name: '알라딘 도서검색',
+        iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
+      })
+      .setTitle(`검색결과 : ${query}`)
+      .setURL(
+        URL.replace(
+          'http://www.aladin.co.kr/ttb/api/ItemSearch.aspx',
+          'https://www.aladin.co.kr/search/wsearchresult.aspx'
+        )
+      )
+      .setDescription(`총 ${totalResults}건 검색`)
+      .addFields(
+        ...bookInfos.map((bookInfo: [string, string]) => {
+          return {
+            name: bookInfo[0],
+            value: `[자세히 보기](${bookInfo[1]})`,
+            inline: false,
+          }
+        })
+      )
+      .setColor('#eb3b94')
+      .setTimestamp()
+    console.log('hi')
     await interaction.followUp({
-      ephemeral: true,
-      content: list,
+      embeds: [embed],
     })
+    console.log('bye')
   },
 }
 
-//https://cog-creators.github.io/discord-embed-sandbox/
-
-//https://discordjs.guide/popular-topics/embeds.html#embed-preview
+// https://embed.dan.onl/
