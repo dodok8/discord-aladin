@@ -14,8 +14,16 @@ export const itemSearch: SlashCommand = {
       type: ApplicationCommandOptionType.String,
     },
     {
+      required: false,
+      name: '개수',
+      description: '몇 건의 검색을 볼지 정합니다.',
+      type: ApplicationCommandOptionType.Integer,
+    },
+    // TODO: 이 부분 고치기, 응답의 link로 접근하면 글자가 깨져서 들어가는 증상이 있다.
+    {
       name: '검색어-종류',
-      description: '검색어 종류',
+      description:
+        '검색어 종류, 현재 전체 목록 보기는 기본값인 제목+저자만 지원합니다.',
       type: ApplicationCommandOptionType.String,
       required: false,
       choices: [
@@ -75,47 +83,54 @@ export const itemSearch: SlashCommand = {
     },
   ],
   execute: async (_, interaction) => {
-    const query = interaction.options.get('검색어')?.value
-    const queryType = interaction.options.get('검색어-종류')?.value || 'Keyword'
-    const searchTarget = interaction.options.get('검색-대상')?.value || 'All'
-    const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
-      process.env.ALADIN_TOKEN
-    }&Query=${encodeURI(
-      String(query)
-    )}&QueryType=${queryType}&MaxResults=10&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
-    const response = await fetch(URL)
-    const { item, totalResults } = await response.json()
-    const bookInfos = item.map((i: any): [string, string] => [
-      `${i.title} | ${i.author}`,
-      i.link,
-    ])
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: '알라딘 도서검색',
-        iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-      })
-      .setTitle(`검색결과 : ${query}`)
-      .setURL(
-        URL.replace(
-          'http://www.aladin.co.kr/ttb/api/ItemSearch.aspx',
-          'https://www.aladin.co.kr/search/wsearchresult.aspx'
-        )
-      )
-      .setDescription(`총 ${totalResults}건 검색`)
-      .addFields(
-        ...bookInfos.map((bookInfo: [string, string]) => {
-          return {
-            name: bookInfo[0],
-            value: `[자세히 보기](${bookInfo[1]})`,
-            inline: false,
-          }
+    try {
+      const count = interaction.options.get('개수')?.value || 5
+      const query = interaction.options.get('검색어')?.value
+      const queryType =
+        interaction.options.get('검색어-종류')?.value || 'Keyword'
+      const searchTarget = interaction.options.get('검색-대상')?.value || 'All'
+      const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
+        process.env.ALADIN_TOKEN
+      }&Query=${encodeURI(
+        String(query)
+      )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
+
+      const response = await fetch(URL)
+      const { item, totalResults, link } = await response.json()
+      const bookInfos = item.map((i: any): [string, string] => [
+        `${i.title} | ${i.author}`,
+        i.link,
+      ])
+
+      const embed = new EmbedBuilder()
+        .setAuthor({
+          name: '알라딘 도서검색',
+          iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
         })
-      )
-      .setColor('#eb3b94')
-      .setTimestamp()
-    await interaction.followUp({
-      embeds: [embed],
-    })
+        .setTitle(`검색결과 : ${query}`)
+        .setURL(
+          `http://www.aladin.co.kr/search/wsearchresult.aspx?KeyWord=${encodeURI(
+            String(query)
+          )}&SearchTarget=${searchTarget}`
+        )
+        .setDescription(`총 ${totalResults}건 검색`)
+        .addFields(
+          ...bookInfos.map((bookInfo: [string, string]) => {
+            return {
+              name: bookInfo[0],
+              value: `[자세히 보기](${bookInfo[1]})`,
+              inline: false,
+            }
+          })
+        )
+        .setColor('#eb3b94')
+        .setTimestamp()
+      await interaction.followUp({
+        embeds: [embed],
+      })
+    } catch {
+      await interaction.reply('오류 발생')
+    }
   },
 }
 
