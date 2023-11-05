@@ -3,9 +3,9 @@
 await Bun.build({
   entrypoints: ['./index.ts'],
   outdir: './dist',
-  minify: true,
-  target: 'node',
-  sourcemap: 'external',
+  minify: fale,
+  target: 'bun',
+  sourcemap: 'inline',
 })
 
 export {}
