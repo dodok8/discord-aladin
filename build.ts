@@ -3,7 +3,7 @@
 await Bun.build({
   entrypoints: ['./index.ts'],
   outdir: './dist',
-  minify: true,
+  minify: false,
   target: 'bun',
   sourcemap: 'none',
 })
