@@ -5,7 +5,7 @@ await Bun.build({
   outdir: './dist',
   minify: true,
   target: 'node',
-  sourcemap: 'none',
+  sourcemap: 'external',
 })
 
 export {}
