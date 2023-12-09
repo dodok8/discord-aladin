@@ -1,10 +1,10 @@
 import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js'
-
-import { SlashCommand } from '../types'
+import type { SlashCommand } from '../@types/discord'
+import ky from 'ky'
 
 //The option names should be all lowercased,
 export const itemSearch: SlashCommand = {
-  name: 'item-search',
+  name: 'aladin',
   description: '상품 검색',
   options: [
     {
@@ -83,20 +83,20 @@ export const itemSearch: SlashCommand = {
     },
   ],
   execute: async (_, interaction) => {
-    try {
-      const count = interaction.options.get('개수')?.value || 5
-      const query = interaction.options.get('검색어')?.value
-      const queryType =
-        interaction.options.get('검색어-종류')?.value || 'Keyword'
-      const searchTarget = interaction.options.get('검색-대상')?.value || 'All'
-      const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
-        process.env.ALADIN_TOKEN
-      }&Query=${encodeURI(
-        String(query)
-      )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
+    const count = interaction.options.get('개수')?.value || 5
+    const query = interaction.options.get('검색어')?.value
+    const queryType = interaction.options.get('검색어-종류')?.value || 'Keyword'
+    const searchTarget = interaction.options.get('검색-대상')?.value || 'All'
+    const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
+      process.env.ALADIN_TOKEN
+    }&Query=${encodeURI(
+      String(query)
+    )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
 
-      const response = await fetch(URL)
-      const { item, totalResults, link } = await response.json()
+    try {
+      const data = await ky.get(URL).json<ItemSearchResult>()
+
+      const { item, totalResults } = data
       const bookInfos = item.map((i: any): [string, string] => [
         `${i.title} | ${i.author}`,
         i.link,
@@ -129,7 +129,18 @@ export const itemSearch: SlashCommand = {
         embeds: [embed],
       })
     } catch {
-      await interaction.reply('오류 발생')
+      const embed = new EmbedBuilder()
+        .setAuthor({
+          name: '알라딘 도서검색',
+          iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
+        })
+        .setTitle(`검색오류`)
+        .setDescription(`검색 중 오류 발생`)
+        .setColor('#eb3b94')
+        .setTimestamp()
+      await interaction.followUp({
+        embeds: [embed],
+      })
     }
   },
 }
