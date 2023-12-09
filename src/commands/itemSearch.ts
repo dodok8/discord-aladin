@@ -4,7 +4,7 @@ import ky from 'ky'
 
 //The option names should be all lowercased,
 export const itemSearch: SlashCommand = {
-  name: 'item-search',
+  name: 'aladin',
   description: '상품 검색',
   options: [
     {
