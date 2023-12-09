@@ -1,6 +1,5 @@
 import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js'
-
-import { SlashCommand } from '../types'
+import type { SlashCommand } from '../@types/discord'
 
 //The option names should be all lowercased,
 export const itemSearch: SlashCommand = {
