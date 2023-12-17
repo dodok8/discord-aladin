@@ -1,0 +1,4 @@
+{
+  "name": "Bun-setting",
+  "image" : "docker.io/oven/bun:latest"
+}
