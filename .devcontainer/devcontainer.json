@@ -3,6 +3,5 @@
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/shyim/devcontainers-features/bun:0": {},
-    "ghcr.io/dhoeric/features/flyctl:1": {}
   }
 }
