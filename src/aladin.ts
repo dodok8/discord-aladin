@@ -1,9 +1,9 @@
-import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js'
-import type { SlashCommand } from '../@types/discord'
+import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
+import type { SlashCommand } from './@types/discord'
 import ky from 'ky'
 
 //The option names should be all lowercased,
-export const itemSearch: SlashCommand = {
+const aladin: SlashCommand = {
   name: 'aladin',
   description: '상품 검색',
   options: [
@@ -19,7 +19,6 @@ export const itemSearch: SlashCommand = {
       description: '몇 건의 검색을 볼지 정합니다.',
       type: ApplicationCommandOptionType.Integer,
     },
-    // TODO: 이 부분 고치기, 응답의 link로 접근하면 글자가 깨져서 들어가는 증상이 있다.
     {
       name: '검색어-종류',
       description:
@@ -94,7 +93,7 @@ export const itemSearch: SlashCommand = {
     )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
 
     try {
-      const data = await ky.get(URL).json<ItemSearchResult>()
+      const data = await ky.get(URL).json<ItemSearchResponse>()
 
       const { item, totalResults } = data
       const bookInfos = item.map((i: any): [string, string] => [
@@ -146,3 +145,7 @@ export const itemSearch: SlashCommand = {
 }
 
 // https://embed.dan.onl/
+
+const availableCommands = [aladin]
+
+export default availableCommands
