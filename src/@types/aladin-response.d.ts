@@ -1,4 +1,4 @@
-type ItemSearchResult = {
+type ItemSearchResponse = {
   version: string
   logo: string
   title: string

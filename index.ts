@@ -1,5 +1,5 @@
 import { Client, Interaction } from 'discord.js'
-import commands from './src/commands'
+import commands from './src/aladin'
 
 const client = new Client({
   intents: [],

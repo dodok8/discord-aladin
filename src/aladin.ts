@@ -1,9 +1,10 @@
-import { ApplicationCommandOptionType, EmbedBuilder, time } from 'discord.js'
-import type { SlashCommand } from '../@types/discord'
+import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
+import type { SlashCommand } from './@types/discord'
 import ky from 'ky'
+import { generateUrlQueryForType } from './utils'
 
 //The option names should be all lowercased,
-export const itemSearch: SlashCommand = {
+const aladin: SlashCommand = {
   name: 'aladin',
   description: '상품 검색',
   options: [
@@ -19,11 +20,9 @@ export const itemSearch: SlashCommand = {
       description: '몇 건의 검색을 볼지 정합니다.',
       type: ApplicationCommandOptionType.Integer,
     },
-    // TODO: 이 부분 고치기, 응답의 link로 접근하면 글자가 깨져서 들어가는 증상이 있다.
     {
       name: '검색어-종류',
-      description:
-        '검색어 종류, 현재 전체 목록 보기는 기본값인 제목+저자만 지원합니다.',
+      description: '검색어 종류',
       type: ApplicationCommandOptionType.String,
       required: false,
       choices: [
@@ -83,10 +82,13 @@ export const itemSearch: SlashCommand = {
     },
   ],
   execute: async (_, interaction) => {
-    const count = interaction.options.get('개수')?.value || 5
-    const query = interaction.options.get('검색어')?.value
-    const queryType = interaction.options.get('검색어-종류')?.value || 'Keyword'
-    const searchTarget = interaction.options.get('검색-대상')?.value || 'All'
+    const count = (interaction.options.get('개수')?.value || 5) as number
+    const query = interaction.options.get('검색어')?.value as string
+    const queryType = (interaction.options.get('검색어-종류')?.value ||
+      'Keyword') as QueryType['value']
+    const searchTarget = (interaction.options.get('검색-대상')?.value ||
+      'All') as SearchTarget['value']
+
     const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
       process.env.ALADIN_TOKEN
     }&Query=${encodeURI(
@@ -94,14 +96,18 @@ export const itemSearch: SlashCommand = {
     )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
 
     try {
-      const data = await ky.get(URL).json<ItemSearchResult>()
+      const data = await ky.get(URL).json<ItemSearchResponse>()
 
       const { item, totalResults } = data
       const bookInfos = item.map((i: any): [string, string] => [
         `${i.title} | ${i.author}`,
         i.link,
       ])
-
+      console.log(
+        `http://www.aladin.co.kr/search/wsearchresult.aspx?KeyWord=${encodeURI(
+          String(query)
+        )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
+      )
       const embed = new EmbedBuilder()
         .setAuthor({
           name: '알라딘 도서검색',
@@ -109,9 +115,9 @@ export const itemSearch: SlashCommand = {
         })
         .setTitle(`검색결과 : ${query}`)
         .setURL(
-          `http://www.aladin.co.kr/search/wsearchresult.aspx?KeyWord=${encodeURI(
+          `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURI(
             String(query)
-          )}&SearchTarget=${searchTarget}`
+          )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
         )
         .setDescription(`총 ${totalResults}건 검색`)
         .addFields(
@@ -128,7 +134,8 @@ export const itemSearch: SlashCommand = {
       await interaction.followUp({
         embeds: [embed],
       })
-    } catch {
+    } catch (err) {
+      console.error(err)
       const embed = new EmbedBuilder()
         .setAuthor({
           name: '알라딘 도서검색',
@@ -146,3 +153,7 @@ export const itemSearch: SlashCommand = {
 }
 
 // https://embed.dan.onl/
+
+const availableCommands = [aladin]
+
+export default availableCommands
