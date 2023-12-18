@@ -1,6 +1,7 @@
 import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
 import type { SlashCommand } from './@types/discord'
 import ky from 'ky'
+import { generateUrlQueryForType } from './utils'
 
 //The option names should be all lowercased,
 const aladin: SlashCommand = {
@@ -103,7 +104,11 @@ const aladin: SlashCommand = {
         `${i.title} | ${i.author}`,
         i.link,
       ])
-
+      console.log(
+        `http://www.aladin.co.kr/search/wsearchresult.aspx?KeyWord=${encodeURI(
+          String(query)
+        )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
+      )
       const embed = new EmbedBuilder()
         .setAuthor({
           name: '알라딘 도서검색',
@@ -111,9 +116,9 @@ const aladin: SlashCommand = {
         })
         .setTitle(`검색결과 : ${query}`)
         .setURL(
-          `http://www.aladin.co.kr/search/wsearchresult.aspx?KeyWord=${encodeURI(
+          `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURI(
             String(query)
-          )}&SearchTarget=${searchTarget}`
+          )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
         )
         .setDescription(`총 ${totalResults}건 검색`)
         .addFields(
@@ -130,7 +135,8 @@ const aladin: SlashCommand = {
       await interaction.followUp({
         embeds: [embed],
       })
-    } catch {
+    } catch (err) {
+      console.error(err)
       const embed = new EmbedBuilder()
         .setAuthor({
           name: '알라딘 도서검색',
