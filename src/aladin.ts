@@ -22,8 +22,7 @@ const aladin: SlashCommand = {
     },
     {
       name: '검색어-종류',
-      description:
-        '검색어 종류, 현재 전체 목록 보기는 기본값인 제목+저자만 지원합니다.',
+      description: '검색어 종류',
       type: ApplicationCommandOptionType.String,
       required: false,
       choices: [
