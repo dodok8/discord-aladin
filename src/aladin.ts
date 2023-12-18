@@ -82,10 +82,13 @@ const aladin: SlashCommand = {
     },
   ],
   execute: async (_, interaction) => {
-    const count = interaction.options.get('개수')?.value || 5
-    const query = interaction.options.get('검색어')?.value
-    const queryType = interaction.options.get('검색어-종류')?.value || 'Keyword'
-    const searchTarget = interaction.options.get('검색-대상')?.value || 'All'
+    const count = (interaction.options.get('개수')?.value || 5) as number
+    const query = interaction.options.get('검색어')?.value as string
+    const queryType = (interaction.options.get('검색어-종류')?.value ||
+      'Keyword') as QueryType['value']
+    const searchTarget = (interaction.options.get('검색-대상')?.value ||
+      'All') as SearchTarget['value']
+
     const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
       process.env.ALADIN_TOKEN
     }&Query=${encodeURI(
