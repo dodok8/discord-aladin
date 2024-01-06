@@ -91,7 +91,7 @@ const aladin: SlashCommand = {
 
     const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
       process.env.ALADIN_TOKEN
-    }&Query=${encodeURI(
+    }&Query=${encodeURIComponent(
       String(query)
     )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
 
@@ -112,7 +112,7 @@ const aladin: SlashCommand = {
         })
         .setTitle(`검색결과 : ${query}`)
         .setURL(
-          `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURI(
+          `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
             String(query)
           )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
         )
