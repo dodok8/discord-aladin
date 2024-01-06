@@ -96,6 +96,7 @@ const aladin: SlashCommand = {
     )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
 
     try {
+      console.log(URL)
       const data = await ky.get(URL).json<ItemSearchResponse>()
 
       const { item, totalResults } = data
@@ -103,11 +104,7 @@ const aladin: SlashCommand = {
         `${i.title} | ${i.author}`,
         i.link,
       ])
-      console.log(
-        `http://www.aladin.co.kr/search/wsearchresult.aspx?KeyWord=${encodeURI(
-          String(query)
-        )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
-      )
+
       const embed = new EmbedBuilder()
         .setAuthor({
           name: '알라딘 도서검색',
