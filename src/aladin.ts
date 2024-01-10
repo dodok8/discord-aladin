@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
 import type { SlashCommand } from './@types/discord'
 import ky from 'ky'
-import { generateUrlQueryForType } from './utils'
+import { generateUrlQueryForType, removeExtraSpaces, truncate } from './utils'
 
 //The option names should be all lowercased,
 const aladin: SlashCommand = {
@@ -101,7 +101,10 @@ const aladin: SlashCommand = {
 
       const { item, totalResults } = data
       const bookInfos = item.map((i: any): [string, string] => [
-        `${i.title} | ${i.author}`,
+        `${truncate(removeExtraSpaces(i.title), 200)} | ${truncate(
+          removeExtraSpaces(i.author),
+          40
+        )}`,
         i.link,
       ])
 
