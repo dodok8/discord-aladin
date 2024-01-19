@@ -136,17 +136,8 @@ export const search: SlashCommand = {
       })
     } catch (err) {
       console.error(err)
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: '알라딘 도서검색',
-          iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-        })
-        .setTitle(`검색오류`)
-        .setDescription(`검색 중 오류 발생`)
-        .setColor('#eb3b94')
-        .setTimestamp()
       await interaction.followUp({
-        embeds: [embed],
+        content: ':x: 에러가 발생했습니다.',
       })
     }
   },
