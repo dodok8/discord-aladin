@@ -30,3 +30,9 @@ export const truncate = (str: string, n: number) => {
 export const removeExtraSpaces = (str: string) => {
   return str.replace(/\s+/g, ' ')
 }
+
+export function extractItemId(url: string): string {
+  const urlObj = new URL(url)
+  const params = new URLSearchParams(urlObj.search)
+  return params.get('ItemId') as string
+}
