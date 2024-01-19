@@ -4,7 +4,7 @@ import ky from 'ky'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from './utils'
 
 //The option names should be all lowercased,
-const aladin: SlashCommand = {
+export const aladin: SlashCommand = {
   name: 'aladin',
   description: '상품 검색',
   options: [
@@ -153,7 +153,3 @@ const aladin: SlashCommand = {
 }
 
 // https://embed.dan.onl/
-
-const availableCommands = [aladin]
-
-export default availableCommands
