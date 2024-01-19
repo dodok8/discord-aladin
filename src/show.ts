@@ -7,7 +7,7 @@ import {
   StringSelectMenuOptionBuilder,
 } from 'discord.js'
 import type { SlashCommand } from './@types/discord'
-import { generateUrlQueryForType, removeExtraSpaces, truncate } from './utils'
+import { extractItemId, removeExtraSpaces, truncate } from './utils'
 import axios from 'axios'
 
 //The option names should be all lowercased,
@@ -141,9 +141,44 @@ export const show: SlashCommand = {
         time: 15_000,
       })
       if (confirmation.customId == 'items') {
-        console.log((confirmation as any).values[0])
+        const itemId = extractItemId((confirmation as any).values[0])
+        const URL = `http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx?ttbkey=${process.env.ALADIN_TOKEN}&itemId=${itemId}&itemIdtype=ItemId&output=js&Version=20131101`
+
+        const { data } = await axios.get<ItemLookUpResponse>(URL)
+        const { title, link, description, author, publisher, pubDate, cover } =
+          data.item[0]
+
+        const embed = new EmbedBuilder()
+          .setAuthor({
+            name: '알라딘 상세 보기',
+            iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
+          })
+          .setTitle(truncate(removeExtraSpaces(title), 50))
+          .setURL(link)
+          .setDescription(truncate(removeExtraSpaces(description), 240))
+          .addFields(
+            {
+              name: '작가',
+              value: truncate(removeExtraSpaces(author), 50),
+              inline: false,
+            },
+            {
+              name: '출판사',
+              value: truncate(removeExtraSpaces(publisher), 50),
+              inline: false,
+            },
+            {
+              name: '출판 날짜',
+              value: pubDate,
+              inline: true,
+            }
+          )
+          .setThumbnail(cover)
+          .setColor('#eb3b94')
+          .setTimestamp()
+
         await interaction.followUp({
-          content: (confirmation as any).values[0],
+          embeds: [embed],
         })
       }
     } catch (err) {
