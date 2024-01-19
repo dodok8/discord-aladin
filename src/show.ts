@@ -177,8 +177,9 @@ export const show: SlashCommand = {
           .setColor('#eb3b94')
           .setTimestamp()
 
-        await interaction.followUp({
+        await interaction.editReply({
           embeds: [embed],
+          components: [],
         })
       }
     } catch (err) {
