@@ -4,8 +4,8 @@ import ky from 'ky'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from './utils'
 
 //The option names should be all lowercased,
-export const aladin: SlashCommand = {
-  name: 'aladin',
+export const search: SlashCommand = {
+  name: 'search',
   description: '상품 검색',
   options: [
     {

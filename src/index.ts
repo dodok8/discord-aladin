@@ -1,5 +1,5 @@
-import { aladin } from './aladin'
+import { search } from './search'
 
-const availableCommands = [aladin]
+const availableCommands = [search]
 
 export default availableCommands
