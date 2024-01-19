@@ -104,9 +104,9 @@ export const show: SlashCommand = {
 
     try {
       console.log(URL)
-      const data = await axios<ItemSearchResponse>(URL)
+      const { data } = await axios<ItemSearchResponse>(URL)
 
-      const { item } = data.data
+      const { item } = data
       const bookInfos = item.map((i: any): [string, string, string] => [
         `${truncate(removeExtraSpaces(i.title), 50)}`,
         `${truncate(removeExtraSpaces(i.author), 50)}`,
