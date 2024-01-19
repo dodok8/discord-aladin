@@ -1,3 +1,5 @@
+type ItemLookUpResponse = ItemSearchResponse
+
 type ItemSearchResponse = {
   version: string
   logo: string

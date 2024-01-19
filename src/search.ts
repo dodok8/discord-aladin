@@ -1,11 +1,11 @@
 import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
 import type { SlashCommand } from './@types/discord'
-import ky from 'ky'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from './utils'
+import axios from 'axios'
 
 //The option names should be all lowercased,
-const aladin: SlashCommand = {
-  name: 'aladin',
+export const search: SlashCommand = {
+  name: 'search',
   description: '상품 검색',
   options: [
     {
@@ -97,7 +97,7 @@ const aladin: SlashCommand = {
 
     try {
       console.log(URL)
-      const data = await ky.get(URL).json<ItemSearchResponse>()
+      const { data } = await axios.get<ItemSearchResponse>(URL)
 
       const { item, totalResults } = data
       const bookInfos = item.map((i: any): [string, string] => [
@@ -136,24 +136,11 @@ const aladin: SlashCommand = {
       })
     } catch (err) {
       console.error(err)
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: '알라딘 도서검색',
-          iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-        })
-        .setTitle(`검색오류`)
-        .setDescription(`검색 중 오류 발생`)
-        .setColor('#eb3b94')
-        .setTimestamp()
       await interaction.followUp({
-        embeds: [embed],
+        content: ':x: 에러가 발생했습니다.',
       })
     }
   },
 }
 
 // https://embed.dan.onl/
-
-const availableCommands = [aladin]
-
-export default availableCommands
