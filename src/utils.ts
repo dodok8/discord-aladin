@@ -24,7 +24,7 @@ export const generateUrlQueryForType = (queryType: QueryType['value']) => {
 }
 
 export const truncate = (str: string, n: number) => {
-  return str.length > n ? str.slice(0, n - 1) + '…' : str
+  return str.length > n || str.length == 0 ? str.slice(0, n - 1) + '…' : str
 }
 
 export const removeExtraSpaces = (str: string) => {
