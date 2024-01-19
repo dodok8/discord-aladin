@@ -1,6 +1,5 @@
 import { ApplicationCommandOptionType, EmbedBuilder } from 'discord.js'
 import type { SlashCommand } from './@types/discord'
-import ky from 'ky'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from './utils'
 import axios from 'axios'
 
