@@ -106,7 +106,10 @@ export const show: SlashCommand = {
       console.log(URL)
       const { data } = await axios<ItemSearchResponse>(URL)
 
-      const { item } = data
+      const { item, totalResults } = data
+      if (totalResults == 0) {
+        throw new Error('No Search Result')
+      }
       const bookInfos = item.map((i: any): [string, string, string] => [
         `${truncate(removeExtraSpaces(i.title), 50)}`,
         `${truncate(removeExtraSpaces(i.author), 50)}`,
@@ -190,6 +193,11 @@ export const show: SlashCommand = {
       ) {
         await interaction.editReply({
           content: ':clock: 선택 시간이 초과되었습니다.',
+          components: [],
+        })
+      } else if ((err as Error).message == 'No Search Result') {
+        await interaction.editReply({
+          content: '😮 검색 결과가 없습니다.',
           components: [],
         })
       } else {
