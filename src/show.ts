@@ -145,7 +145,7 @@ export const show: SlashCommand = {
       })
       if (confirmation.customId == 'items') {
         const itemId = extractItemId((confirmation as any).values[0])
-        const URL = `http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx?ttbkey=${process.env.ALADIN_TOKEN}&itemId=${itemId}&itemIdtype=ItemId&output=js&Version=20131101`
+        const URL = `http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx?ttbkey=${process.env.ALADIN_TOKEN}&itemId=${itemId}&itemIdtype=ItemId&Cover=MidBig&output=js&Version=20131101`
 
         const { data } = await axios.get<ItemLookUpResponse>(URL)
         const { title, link, description, author, publisher, pubDate, cover } =
@@ -176,7 +176,7 @@ export const show: SlashCommand = {
               inline: true,
             }
           )
-          .setThumbnail(cover)
+          .setImage(cover)
           .setColor('#eb3b94')
           .setTimestamp()
 
