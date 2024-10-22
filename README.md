@@ -1,5 +1,7 @@
 # discord-aladin
- 알라딘 도서 검색 API를 이용한 디스코드 봇 [바로 추가하기](https://discord.com/api/oauth2/authorize?client_id=1170272295827279914&permissions=18432&scope=bot)
+ 알라딘 도서 검색 API를 이용한 디스코드 봇 [바로 추가하기](https://discord.com/oauth2/authorize?client_id=1170272295827279914)
+
+유저 봇 형태로 설치가 가능하기 때문에, 한번 설치하면 어느 서버에서나 사용할 수 있습니다. 물론, 서버에도 설치 가능해요.
 
 ![image](https://github.com/dodok8/discord-aladin/assets/17683473/5804a9e0-22f2-4d58-90a7-b5e320e9a635)
 
