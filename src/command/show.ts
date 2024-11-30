@@ -7,7 +7,7 @@ import {
   StringSelectMenuOptionBuilder,
   ComponentType,
 } from 'discord.js'
-import axios from 'axios'
+import ky from 'ky'
 import ApplicationCommand from '../@types/ApplicationCommand'
 import { extractItemId, removeExtraSpaces, truncate } from '../utils'
 
@@ -65,9 +65,10 @@ export const showCommand = new ApplicationCommand({
 
     try {
       console.log(URL)
-      const { data } = await axios.get<ItemSearchResponse>(URL)
+      const { item, totalResults } = await ky
+        .get<ItemSearchResponse>(URL)
+        .json()
 
-      const { item, totalResults } = data
       if (totalResults === 0) {
         throw new Error('No Search Result')
       }
@@ -109,8 +110,7 @@ export const showCommand = new ApplicationCommand({
         const itemId = extractItemId(confirmation.values[0])
         const detailURL = `http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx?ttbkey=${process.env.ALADIN_TOKEN}&itemId=${itemId}&itemIdtype=ItemId&Cover=MidBig&output=js&Version=20131101`
 
-        const { data: detailData } =
-          await axios.get<ItemLookUpResponse>(detailURL)
+        const detailData = await ky.get<ItemLookUpResponse>(detailURL).json()
         const { title, link, description, author, publisher, pubDate, cover } =
           detailData.item[0]
 
