@@ -15,7 +15,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "discord.js": "^14.13.0"
+    "discord.js": "^14.13.0",
+    "ky": "^1.7.2"
   },
   "scripts": {
     "build": "bun build.ts",
