@@ -1,6 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from '../utils'
-import axios from 'axios'
+import ky from 'ky'
 import ApplicationCommand from '../@types/ApplicationCommand'
 
 //The option names should be all lowercased,
@@ -61,9 +61,10 @@ export const searchCommand = new ApplicationCommand({
 
     try {
       console.log(URL)
-      const { data } = await axios.get<ItemSearchResponse>(URL)
+      const { item, totalResults } = await ky
+        .get<ItemSearchResponse>(URL)
+        .json()
 
-      const { item, totalResults } = data
       const bookInfos = item.map((i: any): [string, string] => [
         `${truncate(removeExtraSpaces(i.title), 200)} | ${truncate(
           removeExtraSpaces(i.author),
