@@ -2,6 +2,7 @@ import { EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from '../utils'
 import ky from 'ky'
 import ApplicationCommand from '../@types/ApplicationCommand'
+import { itemSearch } from '../aladin/itemSearch'
 
 //The option names should be all lowercased,
 
@@ -51,19 +52,17 @@ export const searchCommand = new ApplicationCommand({
     const query = interaction.options.getString('검색어', true)
     const queryType = (interaction.options.getString('검색어-종류') ||
       'Keyword') as QueryType['value']
-    const searchTarget = interaction.options.getString('검색-대상') || 'All'
-
-    const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
-      process.env.ALADIN_TOKEN
-    }&Query=${encodeURIComponent(
-      query
-    )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
+    const searchTarget = (interaction.options.getString('검색-대상') ||
+      'All') as SearchTarget['value']
 
     try {
-      console.log(URL)
-      const { item, totalResults } = await ky
-        .get<ItemSearchResponse>(URL)
-        .json()
+      const { item, totalResults } = await itemSearch(
+        count,
+        query,
+        queryType,
+        searchTarget,
+        1
+      )
 
       const bookInfos = item.map((i: any): [string, string] => [
         `${truncate(removeExtraSpaces(i.title), 200)} | ${truncate(
