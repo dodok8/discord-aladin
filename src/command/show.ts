@@ -10,6 +10,8 @@ import {
 import ky from 'ky'
 import ApplicationCommand from '../@types/ApplicationCommand'
 import { extractItemId, removeExtraSpaces, truncate } from '../utils'
+import { itemSearch } from '../aladin/itemSearch'
+import { itemLookUp } from '../aladin/itemLookUp'
 
 export const showCommand = new ApplicationCommand({
   data: new SlashCommandBuilder()
@@ -54,20 +56,19 @@ export const showCommand = new ApplicationCommand({
   execute: async (interaction: ChatInputCommandInteraction) => {
     const count = interaction.options.getInteger('개수') || 5
     const query = interaction.options.getString('검색어', true)
-    const queryType = interaction.options.getString('검색어-종류') || 'Keyword'
-    const searchTarget = interaction.options.getString('검색-대상') || 'All'
-
-    const URL = `http://www.aladin.co.kr/ttb/api/ItemSearch.aspx?ttbkey=${
-      process.env.ALADIN_TOKEN
-    }&Query=${encodeURIComponent(
-      query
-    )}&QueryType=${queryType}&MaxResults=${count}&start=1&SearchTarget=${searchTarget}&output=js&Version=20131101`
+    const queryType = (interaction.options.getString('검색어-종류') ||
+      'Keyword') as QueryType['value']
+    const searchTarget = (interaction.options.getString('검색-대상') ||
+      'All') as SearchTarget['value']
 
     try {
-      console.log(URL)
-      const { item, totalResults } = await ky
-        .get<ItemSearchResponse>(URL)
-        .json()
+      const { item, totalResults } = await itemSearch(
+        count,
+        query,
+        queryType,
+        searchTarget,
+        1
+      )
 
       if (totalResults === 0) {
         throw new Error('No Search Result')
@@ -108,9 +109,8 @@ export const showCommand = new ApplicationCommand({
         })
 
         const itemId = extractItemId(confirmation.values[0])
-        const detailURL = `http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx?ttbkey=${process.env.ALADIN_TOKEN}&itemId=${itemId}&itemIdtype=ItemId&Cover=MidBig&output=js&Version=20131101`
 
-        const detailData = await ky.get<ItemLookUpResponse>(detailURL).json()
+        const detailData = await itemLookUp(itemId)
         const { title, link, description, author, publisher, pubDate, cover } =
           detailData.item[0]
 
