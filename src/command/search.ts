@@ -9,40 +9,7 @@ import {
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from '../utils'
 import ApplicationCommand from '../@types/ApplicationCommand'
 import { itemSearch } from '../aladin/itemSearch'
-
-function createEmbed(
-  query: string,
-  totalResults: number,
-  bookInfos: [string, string][],
-  start: number,
-  maxPages: number,
-  searchTarget: string,
-  queryType: QueryType['value']
-): EmbedBuilder {
-  return new EmbedBuilder()
-    .setAuthor({
-      name: '알라딘 도서검색',
-      iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-    })
-    .setTitle(`검색결과: ${query} | ${start} / ${maxPages}페이지`)
-    .setURL(
-      `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
-        query
-      )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
-    )
-    .setDescription(`총 ${totalResults}건 검색`)
-    .addFields(
-      ...bookInfos.map((bookInfo: [string, string]) => {
-        return {
-          name: bookInfo[0],
-          value: `[자세히 보기](${bookInfo[1]})`,
-          inline: false,
-        }
-      })
-    )
-    .setColor('#eb3b94')
-    .setTimestamp()
-}
+import { createListEmbed } from '../embedBuilder'
 
 export const searchCommand = new ApplicationCommand({
   data: new SlashCommandBuilder()
@@ -54,7 +21,8 @@ export const searchCommand = new ApplicationCommand({
     .addIntegerOption((option) =>
       option
         .setName('개수')
-        .setDescription('몇 건의 검색을 볼지 정합니다.')
+        .setDescription('몇 건의 검색을 볼지 정합니다.(최대 10건, 기본 5건)')
+        .setMaxValue(10)
         .setRequired(false)
     )
     .addStringOption((option) =>
@@ -127,7 +95,7 @@ export const searchCommand = new ApplicationCommand({
         nextButton
       )
 
-      const embed = createEmbed(
+      const embed = createListEmbed(
         query,
         totalResults,
         bookInfos,
@@ -155,39 +123,22 @@ export const searchCommand = new ApplicationCommand({
           )
 
           const bookInfos = item.map((i: any): [string, string] => [
-            `${truncate(removeExtraSpaces(i.title), 200)} | ${truncate(
+            `${truncate(removeExtraSpaces(i.title), 150)} | ${truncate(
               removeExtraSpaces(i.author),
-              40
+              30
             )}`,
             i.link,
           ])
 
-          const embed = new EmbedBuilder()
-            .setAuthor({
-              name: '알라딘 도서검색',
-              iconURL:
-                'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-            })
-            .setTitle(`검색결과: ${query} |  ${start} / ${maxPages}페이지`)
-            .setURL(
-              `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
-                query
-              )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(
-                queryType
-              )}`
-            )
-            .setDescription(`총 ${totalResults}건 검색`)
-            .addFields(
-              ...bookInfos.map((bookInfo: [string, string]) => {
-                return {
-                  name: bookInfo[0],
-                  value: `[자세히 보기](${bookInfo[1]})`,
-                  inline: false,
-                }
-              })
-            )
-            .setColor('#eb3b94')
-            .setTimestamp()
+          const embed = createListEmbed(
+            query,
+            totalResults,
+            bookInfos,
+            start,
+            maxPages,
+            searchTarget,
+            queryType
+          )
 
           const response = await interaction.editReply({
             embeds: [embed],
