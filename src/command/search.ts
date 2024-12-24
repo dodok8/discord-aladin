@@ -7,11 +7,42 @@ import {
   SlashCommandBuilder,
 } from 'discord.js'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from '../utils'
-import ky from 'ky'
 import ApplicationCommand from '../@types/ApplicationCommand'
 import { itemSearch } from '../aladin/itemSearch'
 
-//The option names should be all lowercased,
+function createEmbed(
+  query: string,
+  totalResults: number,
+  bookInfos: [string, string][],
+  start: number,
+  maxPages: number,
+  searchTarget: string,
+  queryType: QueryType['value']
+): EmbedBuilder {
+  return new EmbedBuilder()
+    .setAuthor({
+      name: '알라딘 도서검색',
+      iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
+    })
+    .setTitle(`검색결과: ${query} | ${start} / ${maxPages}페이지`)
+    .setURL(
+      `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
+        query
+      )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
+    )
+    .setDescription(`총 ${totalResults}건 검색`)
+    .addFields(
+      ...bookInfos.map((bookInfo: [string, string]) => {
+        return {
+          name: bookInfo[0],
+          value: `[자세히 보기](${bookInfo[1]})`,
+          inline: false,
+        }
+      })
+    )
+    .setColor('#eb3b94')
+    .setTimestamp()
+}
 
 export const searchCommand = new ApplicationCommand({
   data: new SlashCommandBuilder()
@@ -73,8 +104,6 @@ export const searchCommand = new ApplicationCommand({
         start
       )
 
-      const maxPages = Math.ceil(totalResults / count)
-
       const bookInfos = item.map((i: any): [string, string] => [
         `${truncate(removeExtraSpaces(i.title), 200)} | ${truncate(
           removeExtraSpaces(i.author),
@@ -82,6 +111,8 @@ export const searchCommand = new ApplicationCommand({
         )}`,
         i.link,
       ])
+
+      const maxPages = Math.ceil(totalResults / count)
 
       const nextButton = new ButtonBuilder()
         .setCustomId('next_page')
@@ -96,32 +127,18 @@ export const searchCommand = new ApplicationCommand({
         nextButton
       )
 
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: '알라딘 도서검색',
-          iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-        })
-        .setTitle(`검색결과: ${query} |  ${start} / ${maxPages}페이지`)
-        .setURL(
-          `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
-            query
-          )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
-        )
-        .setDescription(`총 ${totalResults}건 검색`)
-        .addFields(
-          ...bookInfos.map((bookInfo: [string, string]) => {
-            return {
-              name: bookInfo[0],
-              value: `[자세히 보기](${bookInfo[1]})`,
-              inline: false,
-            }
-          })
-        )
-        .setColor('#eb3b94')
-        .setTimestamp()
+      const embed = createEmbed(
+        query,
+        totalResults,
+        bookInfos,
+        start,
+        maxPages,
+        searchTarget,
+        queryType
+      )
 
       const response = await interaction.reply({
-        embeds: [embed],
+        embeds: [],
         components: [row],
         fetchReply: true,
       })
