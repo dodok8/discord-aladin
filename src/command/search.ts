@@ -73,6 +73,8 @@ export const searchCommand = new ApplicationCommand({
         start
       )
 
+      const maxPages = Math.ceil(totalResults / count)
+
       const bookInfos = item.map((i: any): [string, string] => [
         `${truncate(removeExtraSpaces(i.title), 200)} | ${truncate(
           removeExtraSpaces(i.author),
@@ -99,7 +101,7 @@ export const searchCommand = new ApplicationCommand({
           name: '알라딘 도서검색',
           iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
         })
-        .setTitle(`검색결과 : ${query}`)
+        .setTitle(`검색결과: ${query} |  ${start} / ${maxPages}페이지`)
         .setURL(
           `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
             query
@@ -149,7 +151,7 @@ export const searchCommand = new ApplicationCommand({
               iconURL:
                 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
             })
-            .setTitle(`검색결과 : ${query}`)
+            .setTitle(`검색결과: ${query} |  ${start} / ${maxPages}페이지`)
             .setURL(
               `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
                 query
@@ -181,9 +183,9 @@ export const searchCommand = new ApplicationCommand({
           })
 
           if (confirmation.customId === 'next_page') {
-            start += 1
+            start += start < maxPages ? 1 : 0
           } else if (confirmation.customId === 'previous_page') {
-            start -= start > 0 ? 1 : 0
+            start -= start > 1 ? 1 : 0
           }
 
           await confirmation.deferUpdate()
