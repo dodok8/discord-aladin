@@ -1,10 +1,15 @@
-import { EmbedBuilder, SlashCommandBuilder } from 'discord.js'
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+  EmbedBuilder,
+  SlashCommandBuilder,
+} from 'discord.js'
 import { generateUrlQueryForType, removeExtraSpaces, truncate } from '../utils'
-import ky from 'ky'
 import ApplicationCommand from '../@types/ApplicationCommand'
 import { itemSearch } from '../aladin/itemSearch'
-
-//The option names should be all lowercased,
+import { createListEmbed } from '../embedBuilder'
 
 export const searchCommand = new ApplicationCommand({
   data: new SlashCommandBuilder()
@@ -16,7 +21,8 @@ export const searchCommand = new ApplicationCommand({
     .addIntegerOption((option) =>
       option
         .setName('개수')
-        .setDescription('몇 건의 검색을 볼지 정합니다.')
+        .setDescription('몇 건의 검색을 볼지 정합니다.(최대 10건, 기본 5건)')
+        .setMaxValue(10)
         .setRequired(false)
     )
     .addStringOption((option) =>
@@ -55,13 +61,15 @@ export const searchCommand = new ApplicationCommand({
     const searchTarget = (interaction.options.getString('검색-대상') ||
       'All') as SearchTarget['value']
 
+    let start = 1
+
     try {
       const { item, totalResults } = await itemSearch(
         count,
         query,
         queryType,
         searchTarget,
-        1
+        start
       )
 
       const bookInfos = item.map((i: any): [string, string] => [
@@ -72,31 +80,92 @@ export const searchCommand = new ApplicationCommand({
         i.link,
       ])
 
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: '알라딘 도서검색',
-          iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-        })
-        .setTitle(`검색결과 : ${query}`)
-        .setURL(
-          `http://www.aladin.co.kr/search/wsearchresult.aspx?SearchWord=${encodeURIComponent(
-            query
-          )}&SearchTarget=${searchTarget}&${generateUrlQueryForType(queryType)}`
-        )
-        .setDescription(`총 ${totalResults}건 검색`)
-        .addFields(
-          ...bookInfos.map((bookInfo: [string, string]) => {
-            return {
-              name: bookInfo[0],
-              value: `[자세히 보기](${bookInfo[1]})`,
-              inline: false,
-            }
-          })
-        )
-        .setColor('#eb3b94')
-        .setTimestamp()
+      const maxPages = Math.ceil(totalResults / count)
 
-      await interaction.reply({ embeds: [embed] })
+      const nextButton = new ButtonBuilder()
+        .setCustomId('next_page')
+        .setLabel('다음 페이지')
+        .setStyle(ButtonStyle.Primary)
+      const previousButton = new ButtonBuilder()
+        .setCustomId('previous_page')
+        .setLabel('이전 페이지')
+        .setStyle(ButtonStyle.Secondary)
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        previousButton,
+        nextButton
+      )
+
+      const embed = createListEmbed(
+        query,
+        totalResults,
+        bookInfos,
+        start,
+        maxPages,
+        searchTarget,
+        queryType
+      )
+
+      const response = await interaction.reply({
+        embeds: [],
+        components: [row],
+        fetchReply: true,
+      })
+
+      let continueLoop = true
+      while (continueLoop) {
+        try {
+          const { item, totalResults } = await itemSearch(
+            count,
+            query,
+            queryType,
+            searchTarget,
+            start
+          )
+
+          const bookInfos = item.map((i: any): [string, string] => [
+            `${truncate(removeExtraSpaces(i.title), 150)} | ${truncate(
+              removeExtraSpaces(i.author),
+              30
+            )}`,
+            i.link,
+          ])
+
+          const embed = createListEmbed(
+            query,
+            totalResults,
+            bookInfos,
+            start,
+            maxPages,
+            searchTarget,
+            queryType
+          )
+
+          const response = await interaction.editReply({
+            embeds: [embed],
+            components: [row],
+          })
+
+          const confirmation = await response.awaitMessageComponent({
+            filter: (i) => i.user.id === interaction.user.id,
+            componentType: ComponentType.Button,
+          })
+
+          if (confirmation.customId === 'next_page') {
+            start += start < maxPages ? 1 : 0
+          } else if (confirmation.customId === 'previous_page') {
+            start -= start > 1 ? 1 : 0
+          }
+
+          await confirmation.deferUpdate()
+        } catch (err) {
+          console.error(err)
+          continueLoop = false
+          await interaction.followUp({
+            content: ':x: 에러가 발생했습니다.',
+            ephemeral: true,
+          })
+        }
+      }
     } catch (err) {
       console.error(err)
       await interaction.reply({

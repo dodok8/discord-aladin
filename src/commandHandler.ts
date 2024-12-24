@@ -2,8 +2,9 @@ import { REST } from '@discordjs/rest'
 import { Routes, Client } from 'discord.js'
 import { searchCommand } from './command/search'
 import { showCommand } from './command/show'
+import { oldShowCommand } from './command/oldShow'
 
-const commands = [searchCommand, showCommand]
+const commands = [searchCommand, showCommand, oldShowCommand]
 
 const { DISCORD_TOKEN, CLIENT_ID } = process.env
 

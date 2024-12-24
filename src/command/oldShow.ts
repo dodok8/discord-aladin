@@ -6,22 +6,25 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   ComponentType,
-  ButtonBuilder,
-  ButtonStyle,
 } from 'discord.js'
 import ky from 'ky'
 import ApplicationCommand from '../@types/ApplicationCommand'
 import { extractItemId, removeExtraSpaces, truncate } from '../utils'
 import { itemSearch } from '../aladin/itemSearch'
 import { itemLookUp } from '../aladin/itemLookUp'
-import { createListEmbed } from '../embedBuilder'
 
-export const showCommand = new ApplicationCommand({
+export const oldShowCommand = new ApplicationCommand({
   data: new SlashCommandBuilder()
-    .setName('show')
+    .setName('oldshow')
     .setDescription('상품 검색')
     .addStringOption((option) =>
       option.setName('검색어').setDescription('검색어').setRequired(true)
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName('개수')
+        .setDescription('몇 건의 검색을 볼지 정합니다.')
+        .setRequired(false)
     )
     .addStringOption((option) =>
       option
@@ -51,141 +54,63 @@ export const showCommand = new ApplicationCommand({
         )
     ) as SlashCommandBuilder,
   execute: async (interaction: ChatInputCommandInteraction) => {
-    const count = interaction.options.getInteger('개수') || 4
+    const count = interaction.options.getInteger('개수') || 5
     const query = interaction.options.getString('검색어', true)
     const queryType = (interaction.options.getString('검색어-종류') ||
       'Keyword') as QueryType['value']
     const searchTarget = (interaction.options.getString('검색-대상') ||
       'All') as SearchTarget['value']
 
-    let start = 1
     try {
       const { item, totalResults } = await itemSearch(
         count,
         query,
         queryType,
         searchTarget,
-        start
+        1
       )
 
-      const bookInfos = item.map((i: any): [string, string] => [
-        `${truncate(removeExtraSpaces(i.title), 200)} | ${truncate(
-          removeExtraSpaces(i.author),
-          40
-        )}`,
+      if (totalResults === 0) {
+        throw new Error('No Search Result')
+      }
+
+      const bookInfos = item.map((i: any): [string, string, string] => [
+        truncate(removeExtraSpaces(i.title), 50),
+        truncate(removeExtraSpaces(i.author), 50),
         i.link,
       ])
 
-      const maxPages = Math.ceil(totalResults / count)
+      const select = new StringSelectMenuBuilder()
+        .setCustomId('items')
+        .setPlaceholder('소개할 항목을 고르세요')
+        .addOptions(
+          bookInfos.map((bookInfo) =>
+            new StringSelectMenuOptionBuilder()
+              .setLabel(bookInfo[0])
+              .setDescription(bookInfo[1])
+              .setValue(bookInfo[2])
+          )
+        )
 
-      const button1 = new ButtonBuilder()
-        .setLabel('1')
-        .setCustomId('1')
-        .setStyle(ButtonStyle.Secondary)
-      const button2 = new ButtonBuilder()
-        .setLabel('2')
-        .setCustomId('2')
-        .setStyle(ButtonStyle.Secondary)
-      const button3 = new ButtonBuilder()
-        .setLabel('3')
-        .setCustomId('3')
-        .setStyle(ButtonStyle.Secondary)
-      const button4 = new ButtonBuilder()
-        .setLabel('4')
-        .setCustomId('4')
-        .setStyle(ButtonStyle.Secondary)
-      const nextButton = new ButtonBuilder()
-        .setCustomId('next_page')
-        .setLabel('다음 페이지')
-        .setStyle(ButtonStyle.Primary)
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        button1,
-        button2,
-        button3,
-        button4,
-        nextButton
-      )
-
-      const embed = createListEmbed(
-        query,
-        totalResults,
-        bookInfos,
-        start,
-        maxPages,
-        searchTarget,
-        queryType
+      const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        select
       )
 
       const response = await interaction.reply({
-        embeds: [embed],
         components: [row],
         fetchReply: true,
       })
 
-      let continueLoop = true
-      let itemId = undefined
-      while (continueLoop && !itemId) {
-        try {
-          const { item, totalResults } = await itemSearch(
-            count,
-            query,
-            queryType,
-            searchTarget,
-            start
-          )
-
-          const bookInfos = item.map((i: any): [string, string] => [
-            `${truncate(removeExtraSpaces(i.title), 150)} | ${truncate(
-              removeExtraSpaces(i.author),
-              30
-            )}`,
-            i.link,
-          ])
-
-          const embed = createListEmbed(
-            query,
-            totalResults,
-            bookInfos,
-            start,
-            maxPages,
-            searchTarget,
-            queryType
-          )
-
-          const response = await interaction.editReply({
-            embeds: [embed],
-            components: [row],
-          })
-
-          const confirmation = await response.awaitMessageComponent({
-            filter: (i) => i.user.id === interaction.user.id,
-            componentType: ComponentType.Button,
-          })
-
-          if (confirmation.customId === 'next_page') {
-            start += start < maxPages ? 1 : 0
-          } else if (confirmation.customId === 'previous_page') {
-            start -= start > 1 ? 1 : 0
-          } else {
-            itemId = extractItemId(
-              bookInfos[parseInt(confirmation.customId) - 1][1]
-            )
-            break
-          }
-
-          await confirmation.deferUpdate()
-        } catch (err) {
-          console.error(err)
-          continueLoop = false
-          await interaction.followUp({
-            content: ':x: 에러가 발생했습니다.',
-            ephemeral: true,
-          })
-        }
-      }
-
       try {
-        const detailData = await itemLookUp(itemId as string)
+        const confirmation = await response.awaitMessageComponent({
+          filter: (i) => i.user.id === interaction.user.id,
+          time: 15_000,
+          componentType: ComponentType.StringSelect,
+        })
+
+        const itemId = extractItemId(confirmation.values[0])
+
+        const detailData = await itemLookUp(itemId)
         const { title, link, description, author, publisher, pubDate, cover } =
           detailData.item[0]
 
@@ -256,4 +181,4 @@ export const showCommand = new ApplicationCommand({
   },
 })
 
-export default showCommand
+export default oldShowCommand
