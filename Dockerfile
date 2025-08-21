@@ -20,6 +20,8 @@ FROM base as build
 RUN apt-get update -qq && \
     apt-get install -y build-essential pkg-config python-is-python3
 
+RUN apt install -y chromium-browser
+
 # Install node modules
 COPY --link bun.lockb package.json ./
 RUN bun install

@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "discord.js": "^14.13.0",
-    "ky": "^1.7.2"
+    "ky": "^1.7.2",
+    "puppeteer": "^24.17.0"
   },
   "scripts": {
     "build": "bun build.ts",
