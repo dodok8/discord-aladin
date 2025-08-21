@@ -14,7 +14,7 @@ import ApplicationCommand from '../@types/ApplicationCommand'
 import { extractItemId, removeExtraSpaces, truncate } from '../utils'
 import { itemSearch } from '../aladin/itemSearch'
 import { itemLookUp } from '../aladin/itemLookUp'
-import { createListEmbed } from '../embedBuilder'
+import { createListEmbed, createShowEmbed } from '../embedBuilder'
 
 export const showCommand = new ApplicationCommand({
   data: new SlashCommandBuilder()
@@ -189,34 +189,7 @@ export const showCommand = new ApplicationCommand({
         const { title, link, description, author, publisher, pubDate, cover } =
           detailData.item[0]
 
-        const embed = new EmbedBuilder()
-          .setAuthor({
-            name: '알라딘 상세 보기',
-            iconURL: 'https://image.aladin.co.kr/img/m/2018/shopping_app1.png',
-          })
-          .setTitle(truncate(removeExtraSpaces(title), 50))
-          .setURL(link)
-          .setDescription(truncate(removeExtraSpaces(description), 240))
-          .addFields(
-            {
-              name: '작가',
-              value: truncate(removeExtraSpaces(author), 50),
-              inline: false,
-            },
-            {
-              name: '출판사',
-              value: truncate(removeExtraSpaces(publisher), 50),
-              inline: false,
-            },
-            {
-              name: '출판 날짜',
-              value: pubDate,
-              inline: true,
-            }
-          )
-          .setImage(cover)
-          .setColor('#eb3b94')
-          .setTimestamp()
+        const embed = createShowEmbed(title, link, description, author, publisher, pubDate, cover);
 
         await interaction.editReply({
           embeds: [embed],
