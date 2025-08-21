@@ -11,10 +11,6 @@ export function setupMessageHandler(client: Client) {
     if (message.author.bot) return
 
     try {
-      console.log(
-        `Message from ${message.author.username} processed successfully ${message.content}`
-      )
-
       let itemId = ''
       if (
         message.content.startsWith(
