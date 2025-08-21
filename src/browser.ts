@@ -5,8 +5,16 @@ let browser: Browser | null = null
 export async function getBrowser(): Promise<Browser> {
   if (!browser) {
     browser = await puppeteer.launch({
-      executablePath: '/usr/bin/chromium-browser',
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: '/usr/bin/chromium',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu',
+      ],
     })
   }
   return browser
