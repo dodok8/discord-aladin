@@ -48,7 +48,6 @@ export function setupCommandHandler(client: Client) {
       try {
         // @ts-ignore
         await command.execute(interaction)
-        console.log(`Command ${commandName} handled successfully`)
       } catch (error) {
         console.error(`Error executing command ${commandName}:`, error)
         await interaction.reply({
